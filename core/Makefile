@@ -787,6 +787,27 @@ $(TARGET_RECOVERY_ROOT_TIMESTAMP): $(INTERNAL_RECOVERY_FILES) \
 	@echo -e ${CL_YLW}"Modifying default.prop"${CL_RST}
 	$(SED_INPLACE) 's/ro.build.date.utc=.*/ro.build.date.utc=0/g' $(TARGET_RECOVERY_ROOT_OUT)/default.prop
 	$(SED_INPLACE) 's/ro.adb.secure=1//g' $(TARGET_RECOVERY_ROOT_OUT)/default.prop
+	@echo -e ${CL_CYN}"----- Copying Samsung exfat/ntfs when present  ------"${CL_RST}
+	$(hide) if [ -f "$(TARGET_OUT)/lib/modules/exfat_core.ko" ]; then \
+	           mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/lib/modules; \
+	           cp -pf $(TARGET_OUT)/lib/modules/exfat*.ko $(TARGET_RECOVERY_ROOT_OUT)/lib/modules; \
+	        fi;
+	$(hide) if [ -f "$(TARGET_OUT)/lib/modules/ntfs.ko" ]; then \
+	           mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/lib/modules; \
+	           cp -pf $(TARGET_OUT)/lib/modules/ntfs.ko $(TARGET_RECOVERY_ROOT_OUT)/lib/modules; \
+	        fi;
+	@echo -e ${CL_CYN}"----- Copying extra.fstab when present  ------"${CL_RST}
+	$(hide) if [ -f "$(TARGET_DEVICE_DIR)/rootdir/etc/extra.fstab" ]; then \
+	           cp -pf $(TARGET_DEVICE_DIR)/rootdir/etc/extra.fstab $(TARGET_RECOVERY_ROOT_OUT)/etc/extra.fstab; \
+	           echo "using $(TARGET_DEVICE_DIR)/rootdir/etc/extra.fstab"; \
+	        fi;
+	@echo -e ${CL_CYN}"----- Copying custom init.rc when present  ------"${CL_RST}
+	$(hide) for f in $(TARGET_DEVICE_DIR)/rootdir/etc/init.philz*.rc; do \
+	            if [ -f $$f ]; then \
+	                cp -pf $(TARGET_DEVICE_DIR)/rootdir/etc/init.philz*.rc $(TARGET_RECOVERY_ROOT_OUT)/init.rc; \
+	                echo "found $$f"; \
+	            fi; \
+	        done;
 	@echo -e ${CL_CYN}"----- Made recovery filesystem --------"$(TARGET_RECOVERY_ROOT_OUT)${CL_RST}
 	@touch $(TARGET_RECOVERY_ROOT_TIMESTAMP)
 
@@ -805,7 +826,7 @@ $(INSTALLED_RECOVERYIMAGE_TARGET): $(MKBOOTIMG) \
 		$(recovery_ramdisk) \
 		$(recovery_kernel)
 	@echo -e ${CL_CYN}"----- Making recovery image ------"${CL_RST}
-	$(hide) $(MKBOOTIMG) $(INTERNAL_RECOVERYIMAGE_ARGS) $(BOARD_MKBOOTIMG_ARGS) --output $@
+	$(MKBOOTIMG) $(INTERNAL_RECOVERYIMAGE_ARGS) $(BOARD_MKBOOTIMG_ARGS) --output $@
 	$(hide) $(call assert-max-image-size,$@,$(BOARD_RECOVERYIMAGE_PARTITION_SIZE),raw)
 	@echo -e ${CL_CYN}"Made recovery image: $@"${CL_RST}
 endif
