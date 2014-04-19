@@ -796,6 +796,11 @@ $(TARGET_RECOVERY_ROOT_TIMESTAMP): $(INTERNAL_RECOVERY_FILES) \
 	           mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/lib/modules; \
 	           cp -pf $(TARGET_OUT)/lib/modules/ntfs.ko $(TARGET_RECOVERY_ROOT_OUT)/lib/modules; \
 	        fi;
+	@echo -e ${CL_CYN}"----- Copying root hacked adbd when present  ------"${CL_RST}
+	$(hide) if [ -f "$(TARGET_DEVICE_DIR)/recovery/adbd" ]; then \
+	           cp -pf $(TARGET_DEVICE_DIR)/recovery/adbd $(TARGET_RECOVERY_ROOT_OUT)/sbin/adbd; \
+	           echo "using $(TARGET_DEVICE_DIR)/recovery/adbd"; \
+	        fi;
 	@echo -e ${CL_CYN}"----- Copying extra.fstab when present  ------"${CL_RST}
 	$(hide) if [ -f "$(TARGET_DEVICE_DIR)/rootdir/etc/extra.fstab" ]; then \
 	           cp -pf $(TARGET_DEVICE_DIR)/rootdir/etc/extra.fstab $(TARGET_RECOVERY_ROOT_OUT)/etc/extra.fstab; \
